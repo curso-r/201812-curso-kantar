@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Introdução à programação em R</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Curso-R/Kantar" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Introdução à programação em R
+### Curso-R/Kantar
+### 3 de dezembro de 2018
+
+---
+
+class: middle, center
+
+# Sobre a Curso-R
+
+---
+
+## Curso-R
+
+&lt;img src="img/professores.png" style=" display: block; margin-left: auto; margin-right: auto;"&gt;&lt;/img&gt;
+
+---
+
+## Curso-R
+
+&lt;br&gt;
+
+- Primeiros cursos em 2015, no IME-USP
+
+- Curso-R surge oficialmente em 2017
+
+- Mais de 20 cursos e 300 alunos
+
+---
+class: middle, center
+
+# Sobre o curso
+
+---
+## Cronograma
+
+- Introdução à programação em R
+   - Conceitos básicos e importação (03/12)
+   - Manipulação de dados (05/12)
+   - Visualização de dados (07/12)
+   - Case, dashboards estáticos e outros tópicos (10/12)
+   
+- Introdução ao Machine Learning com R
+  - Principais conceitos e estratégias (12/12)
+  - Regressão linear e regressão logística (14/12)
+  - Modelos de árvores, Bagging e Boosting (17/12)
+  - Aprendizado não-supervisionado, SVM, Market Basket Analysis, Otimização (19/12)
+
+- Introdução ao Deep learning (janeiro)
+  - Principais conceitos
+  - Embeddings
+  - Redes neurais convolucionais e redes neurais recorrentes
+
+---
+
+## Material
+
+- Temos um material em português disponível nesta página:
+
+&lt;center&gt;&lt;a href = 'http://material.curso-r.com/'&gt;http://material.curso-r.com/ &lt;/a&gt;&lt;/center&gt;
+
+&lt;img src="img/material.png" style=" display: block; margin-left: auto; margin-right: auto; width: 70%"&gt;&lt;/img&gt;
+
+- Também temos um blog: &lt;a href='http://curso-r.com/blog/'&gt;http://curso-r.com/blog/ &lt;/a&gt;
+
+---
+
+## Referências
+
+- [R for data science](https://r4ds.had.co.nz)
+
+- [Introduction to statistical learning](https://www-bcf.usc.edu/~gareth/ISL/ISLR%20Seventh%20Printing.pdf)
+
+&lt;br&gt;
+
+.pull-left[
+&lt;img src = "img/islr.png"&gt;
+]
+
+.pull-right[
+&lt;img src = "img/r4ds.png"&gt;
+]
+
+---
+
+class: middle, center
+
+# Introdução: por que programar?
+
+---
+## Fazemos análise de dados no computador
+
+&lt;img src="img/diagrama-programacao.png" style="display: block; margin-left: auto; margin-right: auto; width: 70%"&gt; 
+
+---
+class: center, middle
+
+### Por que programar é preferível?
+
+&lt;br&gt;
+
+# 1. Código é texto
+# 2. Código é legível
+# 3. Código é aberto
+
+---
+class: middle, center
+
+# Código é texto
+
+Podemos copiar e colar
+
+&lt;img src="https://camo.githubusercontent.com/c8400b8b8aa5d9eb50641b3a1c47088cb9103f8b/687474703a2f2f7777772e6a6f736f66746563682e636f6d2f696d616765732f636f70792d70617374652e706e67" style="width: 80%"&gt;
+
+---
+class: middle, center
+
+### Stack Overflow
+
+&lt;img src="https://user-images.githubusercontent.com/4706822/44841420-acea5b80-ac19-11e8-8205-f17c01fbb803.png" style="width: 70%"&gt;
+
+---
+## Código é legível
+
+
+
+
+```r
+image_read("https://jeroen.github.io/images/frink.png") %&gt;%
+  image_rotate(270) %&gt;%
+  image_background("blue", flatten = TRUE) %&gt;%
+  image_border("red", "10x10") %&gt;%
+  image_annotate("Liguagens de programação ainda\nsão linguagens!", 
+                 color = "white", size = 30)
+```
+
+--
+
+.pull-left[
+&lt;img src = "https://jeroen.github.io/images/frink.png" style="width:45%"&gt;
+]
+
+--
+
+.pull-right[
+&lt;img src="introducao-ao-curso_files/figure-html/unnamed-chunk-3-1.png" width="620" /&gt;
+]
+
+
+---
+# Código é aberto
+
+Todas as linguagens de programação modernas são open-source:
+
+
+- Estudantes podem usar as mesmas ferramentas que os profissionais.
+
+- Todos podem usar as melhores ferramentas independente do poder financeiro.
+
+- Qualquer um pode reproduzir as suas análises.
+
+- Você pode corrigir problemas.
+
+- Você pode desenvolver suas próprias ferramentas.
+
+---
+class: middle, center
+
+### Por que utilizar o R?
+
+--
+
+# O R foi criado para fazer análise de dados.
+
+---
+
+## O ciclo da ciência de dados
+
+&lt;img src="img/ciclo-ciencia-de-dados.png" style = "display: block; margin-left: auto; margin-right: auto;"&gt;
+
+---
+
+## O ciclo da ciência de dados com o R
+
+&lt;img src="img/ciclo-ciencia-de-dados-pacotes.png" style = "display: block; margin-left: auto; margin-right: auto;"&gt;
+
+---
+
+## Por que usar o R?
+
+![](https://user-images.githubusercontent.com/4706822/43645752-419e39e8-9709-11e8-81e4-301d59c4664e.png)
+
+O R é a **cola**.
+
+---
+class: middle, center
+
+# Ambientação
+
+---
+class: center, middle, inverse
+
+
+
+## Download do R
+
+[Windows](https://cran.r-project.org/bin/windows/base/)
+[MacOS](https://cran.r-project.org/bin/macosx/)
+[Linux](https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-16-04-2)
+
+---
+class: center, middle, inverse
+
+## Download do RStudio
+
+[Todas as plataformas](https://www.rstudio.com/products/rstudio/download/#download)
+
+
+---
+# Vamos ao R!
+
+&lt;br&gt;
+
+&lt;img src="https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif" style = "display: block; margin-left: auto; margin-right: auto;"&gt;
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
