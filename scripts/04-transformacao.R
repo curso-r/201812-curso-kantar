@@ -49,22 +49,27 @@ bons$ano <= 2010
 # Criar uma variável chamada `filmes_baratos` com filmes com orçamento menor do 
 # que 1 milhão de dólares.
 
-
-
-
 # exemplo 5
 # operadores lógicos
 
-imdb %>% filter(ano > 2010 & nota_imdb > 8.5)
-imdb %>% filter(orcamento < 100000 & receita > 1000000)
+imdb %>% 
+  filter(ano > 2010 & nota_imdb > 8.5)
+imdb %>% 
+  filter(orcamento < 100000 & receita > 1000000)
 
-imdb %>% filter(receita > orcamento)
-imdb %>% filter(receita > orcamento + 500000000)
-imdb %>% filter(receita > orcamento + 500000000 | nota_imdb > 9)
+imdb %>% 
+  filter(receita > orcamento)
+imdb %>% 
+  filter(receita > orcamento + 500000000)
+imdb %>% 
+  filter(receita > orcamento + 500000000 | nota_imdb > 9)
 
-imdb %>% filter(ano > 2010)
-imdb %>% filter(!ano > 2010)
-imdb %>% filter(!receita > orcamento)
+imdb %>% 
+  filter(ano > 2010)
+imdb %>% 
+  filter(!ano > 2010)
+imdb %>% 
+  filter(!receita > orcamento)
 
 # EXERCÍCIO 3
 # Criar um objeto chamado bons_baratos com filmes que tiveram nota no imdb 
@@ -84,7 +89,8 @@ imdb %>% filter(!receita > orcamento)
 # exemplo 6
 # %in%
 
-pitts <- imdb %>% filter(ator_1 %in% c('Angelina Jolie Pitt', "Brad Pitt"))
+pitts <- imdb %>% 
+  filter(ator_1 %in% c('Angelina Jolie Pitt', "Brad Pitt"))
 
 # EXERCÍCIO 7
 # Refaça o EXERCÍCIO 6 usando o %in%.
@@ -130,7 +136,8 @@ imdb %>%
 # exemplo 8
 # str_detect
 
-imdb %>% filter(str_detect(generos, "Action"))
+imdb %>% 
+  filter(str_detect(generos, "Action"))
 
 # EXERCÍCIO 9
 # Salve em um objeto os filmes de Ação e Comédia com nota no imdb maior do que 8.
@@ -140,15 +147,18 @@ imdb %>% filter(str_detect(generos, "Action"))
 
 # exemplo 1
 
-imdb %>% arrange(orcamento)
+imdb %>% 
+  arrange(orcamento)
 
 # exemplo 2
 
-imdb %>% arrange(desc(orcamento))
+imdb %>% 
+  arrange(desc(orcamento))
 
 # exemplo 3
 
-imdb %>% arrange(desc(ano), titulo)
+imdb %>% 
+  arrange(desc(ano), titulo)
 
 # EXERCÍCIO 10
 # Ordene os filmes em ordem decrescente de lucro por ano e salve em um objeto chamado
@@ -159,9 +169,12 @@ imdb %>% arrange(desc(ano), titulo)
 
 df <- tibble(x = c(NA, 1, 2), y = c(1, NA, 2))
 
-df %>% arrange(x)
-df %>% arrange(y)
-df %>% arrange(!is.na(x), x)
+df %>% 
+  arrange(x)
+df %>% 
+  arrange(y)
+df %>% 
+  arrange(!is.na(x), x)
 
 # exemplo 5
 
@@ -175,15 +188,18 @@ imdb %>% filter(ano == 2010) %>% arrange(desc(orcamento))
 
 # exemplo 1
 
-imdb %>% select(titulo, ano, orcamento)
+imdb %>% 
+  select(titulo, ano, orcamento)
 
 # exemplo 2 
 
-imdb %>% select(starts_with("ator"))
+imdb %>% 
+  select(starts_with("ator"))
 
 # exemplo 3
 
-imdb %>% select(-starts_with("ator"), -titulo)
+imdb %>% 
+  select(-starts_with("ator"), -titulo)
 
 # EXERCÍCIO 12
 # Crie uma tabela com apenas as colunas titulo, diretor, e orcamento. Salve em um
@@ -202,11 +218,13 @@ imdb %>% select(-starts_with("ator"), -titulo)
 
 # exemplo 1
 
-imdb %>% mutate(duracao = duracao/60)
+imdb %>% 
+  mutate(duracao = duracao/60)
 
 # exemplo 2
 
-imdb %>% mutate(duracao_horas = duracao/60)
+imdb %>% 
+  mutate(duracao_horas = duracao/60)
 
 # EXERCÍCIO 15
 # Crie uma variável chamada lucro. Salve em um objeto chamado imdb_lucro.
@@ -397,6 +415,11 @@ ano_genero %>%
 # EXERCÍCIO 26
 # Crie uma tabela de dupla entrada de genero e classificacao
 
-# separate
-# unite
-# nest
+# separate/unite
+# nest/unnest
+# misc:
+# - count
+# - lag/lead
+# - if_else/case_when
+# xx_at, xx_if, xx_all
+
