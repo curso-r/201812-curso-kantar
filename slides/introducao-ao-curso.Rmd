@@ -242,3 +242,441 @@ class: center, middle, inverse
 <br>
 
 <img src="https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif" style = "display: block; margin-left: auto; margin-right: auto;">
+
+---
+class: middle, center
+
+# Importação
+
+---
+
+## Ciclo da ciência de dados
+
+<img src="img/ciclo-ciencia-de-dados.png" style = "display: block; margin-left: auto; margin-right: auto;">
+
+---
+
+## O que é importar?
+
+<img src="https://user-images.githubusercontent.com/4706822/43643475-c4b9d7f4-9701-11e8-927e-2e412e99a131.png" style = "display: block; margin-left: auto; margin-right: auto;">
+
+---
+
+## readr
+
+O pacote `readr` possui diversas funções para ler arquivos de texto:
+
+* `read_csv()`
+* `read_delim()`
+* `read_csv2()`
+* `read_log()`
+
+---
+
+## Caminho para os arquivos
+
+1. Podem ser absolutos
+
+```{r, eval=FALSE}
+read_csv("/home/william/Curso-R/201809-intro-r/data/imdb.csv")
+```
+
+
+2. Podem ser relativos ao diretório de trabalho
+
+```{r}
+getwd()
+```
+
+
+```{r, eval=FALSE}
+read_csv("dados/imdb.csv")
+```
+
+---
+
+## Point and Click
+
+Usar o `Import Dataset` do RStudio.
+
+![](https://user-images.githubusercontent.com/4706822/43643963-60496a3a-9703-11e8-81a2-b394bda016ae.png)
+
+---
+
+## read_rds
+
+RDS é o formato binário do R.
+
+* write_rds
+* read_rds
+
+---
+
+## readxl
+
+> Ler arquivos do excel
+
+* `read_excel`
+
+---
+
+## haven
+
+> Ler arquivos de outros softwares de estatística
+
+* `read_sas`
+* `read_spss`
+* `read_stata`
+
+---
+
+## DBI + odbc
+
+> Conexão com bancos de dados
+
+* `dbConnect`
+
+[db.rstudio.com](https://db.rstudio.com)
+
+---
+class: middle, center
+
+# dplyr
+
+---
+
+## Ciclo da ciência de dados
+
+<img src="img/ciclo-ciencia-de-dados.png" style = "display: block; margin-left: auto; margin-right: auto;">
+
+
+---
+class: middle
+
+```{r setup, include=FALSE}
+library(tidyverse)
+imdb <- read_rds("../dados/imdb.rds")
+```
+
+> “Happy families are all alike; every unhappy family is unhappy in its own way.” –– Leo Tolstoy
+
+
+> “Tidy datasets are all alike, but every messy dataset is messy in its own way.” –– Hadley Wickham
+
+---
+
+## Os 5 verbos do dplyr
+
+* `filter()`: selecionar observações (linhas) da base de dados
+* `arrange()`: ordenar de acordo com alguma variável (coluna)
+* `select()`: selecionar variáveis (colunas)
+* `mutate()`: modificar/criar variáveis do banco de dados
+* `summarise()`: sumarizar/agregar variáveis de uma base de dados
+
+---
+
+## 3 regras
+
+* o primeiro argumento é sempre um `data.frame`
+* os outros argumentos descrevem o que você quer fazer
+* todos os verbos retornam sempre um `data.frame`
+
+Essas três regras fazem o uso do pipe (`%>%`) ser muito intuitivo.
+
+---
+class: smaller
+
+# glimpse
+
+Solta um resuminho da base
+
+```{r}
+glimpse(imdb)
+```
+
+
+---
+class: smaller
+
+## filter
+
+Selecionar **linhas** da base de dados!
+
+```{r, warning=FALSE, out.width="70%"}
+imdb %>% 
+  filter(nota_imdb > 9)
+```
+
+---
+
+## filter
+
+> Você pode salvar os resultados em uma outra variável:
+
+```{r, warning=FALSE}
+filmes_bons <- imdb %>% 
+  filter(nota_imdb > 9)
+
+filmes_bons
+```
+
+---
+
+## filter
+
+> Você pode sobreescrever a base também:
+
+```{r}
+filmes_bons <- filmes_bons %>% 
+  filter(orcamento < 1000000)
+
+filmes_bons
+```
+
+---
+class: center, middle
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## arrange
+
+> Ordenar linhas da base de acordo com alguma variável
+
+```{r}
+imdb %>% 
+  arrange(orcamento)
+```
+
+---
+
+## arrange
+
+> Você também pode ordenar na ordem decrescente
+
+```{r}
+imdb %>% 
+  arrange(desc(orcamento))
+```
+
+---
+
+## arrange
+
+> Também é possível ordenar por mais de uma variável:
+
+```{r}
+imdb %>% 
+  arrange(desc(ano), titulo)
+```
+
+---
+class: center, middle
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## select
+
+> Selecionar colunas de uma tabela
+
+```{r}
+imdb %>% 
+  select(titulo, ano, orcamento)
+```
+
+---
+
+## select
+
+> Funções úteis p/ seleção
+
+```{r}
+imdb %>% 
+  select(starts_with("ator"))
+```
+
+---
+
+## select
+
+> Excluir variáveis:
+
+```{r}
+imdb %>% 
+  select(-starts_with("ator"), -titulo)
+```
+
+---
+
+## select
+
+> Outras funções úteis de seleção
+
+* `starts_with("abc")`: seleciona nomes que começam com "abc"
+
+* `ends_with("xyz")`: seleciona nomes que terminam com "xyz"
+
+* `contains("ijk")`: seleciona nomes que contêm "ijk"
+
+* `matches("(.)\\1")`: seleciona nomes usando Expressões Regulares
+
+* `num_range("x", 1:3)`: seleciona x1, x3 e x3
+
+---
+class: center, middle
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## mutate
+
+> Criar ou modificar colunas de um banco de dados.
+
+```{r}
+imdb %>% mutate(duracao = duracao/60)
+```
+
+---
+
+## mutate
+
+> Criando uma nova variável
+
+```{r}
+imdb %>% mutate(duracao_horas = duracao/60)
+```
+
+
+---
+class: center, middle
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+
+---
+
+## summarise
+
+> Agregar/Sumarisar a tabela
+
+```{r}
+imdb %>% summarise(media_orcamento = mean(orcamento, na.rm=TRUE))
+```
+
+---
+
+## summarise
+
+> Calcular várias medidas agregadas
+
+```{r}
+imdb %>% summarise(
+  media_orcamento = mean(orcamento, na.rm=TRUE),
+  mediana_orcamento = median(orcamento, na.rm = TRUE)
+  )
+```
+
+---
+class: center, middle
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## group_by + summarise
+
+> Sumarisar/Agregar a base por grupos
+
+```{r}
+imdb %>% group_by(ano)
+```
+
+---
+
+## group_by + summarise
+
+> Agregar/Sumarisar por grupos
+
+```{r}
+imdb %>% group_by(ano) %>% summarise(qtd_filmes = n())
+```
+
+---
+class: middle, center
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+
+---
+
+## left join
+
+> Tipos de joins
+
+<img src="http://r4ds.had.co.nz/diagrams/join-outer.png" style="width: 40%;" class="middle center">
+
+---
+
+## left join
+
+> Chaves duplicadas na tabela da esquerda
+
+![](http://r4ds.had.co.nz/diagrams/join-one-to-many.png)
+
+---
+
+## left join
+
+> Chaves duplicadas nas duas tabelas
+
+![](http://r4ds.had.co.nz/diagrams/join-many-to-many.png)
+
+---
+class: middle, center
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## gather
+
+> Transformar variáveis em linhas:
+
+![](http://r4ds.had.co.nz/images/tidy-9.png)
+
+---
+class: middle, center
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+
+## spread
+
+> Transformar linhas em colunas
+
+![](http://r4ds.had.co.nz/images/tidy-8.png)
+
+---
+class: middle, center
+
+![](https://media.giphy.com/media/o0vwzuFwCGAFO/giphy.gif)
+
+---
+class: middle, center
+
+## unite e separate
+
+Une e separa colunas
+
+## nest e unnest
+
+- aninha grupos de colunas colunas
+- list columns
+
+
+
