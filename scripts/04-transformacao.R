@@ -376,6 +376,7 @@ imdb_com_generos <- imdb %>%
   left_join(imdb_generos, by = c("diretor", "ano"))
 
 # exemplo 2
+# podemos usar joins para fazer de-para
 
 depara_cores <- tibble(
   cor = c("Color", "Black and White"),
@@ -417,6 +418,7 @@ ano_genero %>%
 
 # separate/unite
 # nest/unnest
+
 # misc:
 # - count
 # - lag/lead

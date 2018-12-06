@@ -4,7 +4,7 @@ mtcars
 View(mtcars)
 help(mtcars)
 
-t.test(mpg ~ am, mtcars)
+t.test(mpg ~ vs, mtcars)
 
 teste <- t.test(mpg ~ am, mtcars)
 
@@ -30,11 +30,12 @@ prop.test(tabela)
 
 # Aderência
 
-titanic <- as.tibble(datasets::Titanic)
+titanic <- tibble::as.tibble(datasets::Titanic)
+View(titanic)
 
 tabela <- c(
-  sum(titanic$n[titanic$Sex == "Male"]),
-  sum(titanic$n[titanic$Sex == "Female"])
+  sum(titanic$n[titanic$Sex == "Male" & titanic$Survived == "Yes"]),
+  sum(titanic$n[titanic$Sex == "Female" & titanic$Survived == "Yes"])
 )
 
 chisq.test(tabela)
@@ -45,6 +46,10 @@ chisq.test(tabela, p = c(0.8, 0.2))
 tabela <- table(credit_data$Records, credit_data$Status)
 
 chisq.test(tabela)
+
+View(credit_data)
+
+table(credit_data$Marital, credit_data$Home) %>% chisq.test()
 
 # Teste de Dunnett --------------------------------------------------------
 
@@ -59,9 +64,12 @@ dados_desfecho <- dados[dados$Time == 18, ]
 
 ajuste <- aov(weight ~ Diet, dados_desfecho)
 
-Dunnet <- glht(ajuste, linfct=mcp(Diet="Dunnett"))
+Dunnet <- glht(ajuste, linfct = mcp(Diet = "Dunnett"))
 summary(Dunnet)
 
+as.numeric(c("a", "b", "a", "b"))
+
+as.numeric(factor(c("a", "b", "a", "b")))
 
 # Teste de Tukey ---------------------------------------------------------
 
@@ -75,4 +83,4 @@ data("diamonds", package = "ggplot2")
 View(diamonds)
 
 cor(diamonds$carat, diamonds$price)
-cor.test(~ carat + price, data = diamonds)
+cor.test( ~ carat + price, data = diamonds)

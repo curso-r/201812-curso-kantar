@@ -12,6 +12,8 @@ E_algumasPoucas.Pessoas_RENUNCIAMconvenções
 obj <- 1
 obj
 
+2 -> obj
+
 # ATALHO para rodar o código: CTRL + ENTER
 # ATALHO para a <- : ALT - (alt menos)
 
@@ -37,7 +39,6 @@ vetor[c(1, 3)]
 vetor[-5]
 vetor[-c(1, 3)]
 
-
 # Tipos -------------------------------------------------------------------
 
 # Numéricos (numeric)
@@ -48,7 +49,7 @@ class(a)
 # Caracteres (character, strings)
 
 obj <- "a"
-obj2 <- a
+obj2 <- "masculino"
 
 class(obj)
 
@@ -67,18 +68,29 @@ class(tibble::as_tibble(mtcars))
 install.packages(c("tidyverse", "rmarkdown", "devtools"))
 devtools::install_github("rstudio/flexdashboard")
 
+dplyr::select()
+
 # Para carregar pacotes
 
 library(dplyr)
 library(ggplot2)
 
+sd
+help(min)
+?median
+
+
 # Funções -----------------------------------------------------------------
 
 seq(to = 10, from = 1, by = 2)
+seq(1, 10, 2)
 
 mean(seq(1, 10, 2))
 
 y <- seq(1, 10, length.out = 5)
+y
+
+rm(y)
 y
 
 minha_soma <- function(x, y) {
@@ -86,6 +98,21 @@ minha_soma <- function(x, y) {
   x + y
   
 }
+
+soma <- 50
+
+minha_soma2 <- function(x, y) {
+  
+  x <- x^2
+  y <-y^2
+  
+  soma <- x + y
+  
+  return(soma)
+  
+}
+
+minha_soma2(1, 2)
 
 minha_soma(x = 1, y = 2)
 minha_soma(1, 2)
@@ -109,9 +136,35 @@ NULL # representa a ausência de informação.
 # Use as funções is.na(), is.nan(), is.infinite() e is.null() 
 # para testar se um objeto é um desses valores.
 
+1 == NA
+
+NA == 1
+
+
+"b" == "a"
+
+idade_joao <- 30
+
+idade_maria <- NA
+
+idade_joao == idade_maria
+
+!is.na(idade_maria)
+!is.na(idade_joao)
+
+mean(c(idade_maria, idade_joao), na.rm = TRUE)
+
+class(1L)
+1L
+
 # Identação ---------------------------------------------------------------
 
-funcao_com_muitos_argumentos(argumento_1 = 10, argumento_2 = 14, argumento_3 = 30, argumento_4 = 11)
+funcao_com_muitos_argumentos(
+  argumento_1 = 10, 
+  argumento_2 = 14, 
+  argumento_3 = 30, 
+  argumento_4 = 11
+)
 
 # ATALHO: CTRL+I
 
@@ -152,18 +205,45 @@ recipiente(rep("farinha", 2), "água", "fermento", "leite", "óleo") %>%
   asse(duração = "50min") %>%
   esfrie("geladeira", "20min")
 
-
 # ATALHO: CTRL + SHIFT + M
 
 
 # Controles de fluxo ------------------------------------------------------
 
+x <- 0
+
 if(x < 0) {
   "negativo"
+} else if(x == 0) {
+  "neutro"
 } else {
   "positivo"
 }
 
+x <- -10:30
+
+x_categorizado <- ifelse(x < 0, "negativo", "positivo")
+
+a <- 1:3
+b <- 4:9
+
+a + 1
+
+class(c(1, 2, 3))
+
+c(1, 2, 3, "a")
+c(TRUE, FALSE, "a")
+c(1L, 2L, "a")
+c(TRUE, FALSE, 1)
+
+coluna <- c(1, 2, 3, NA, 3, 10, NA)
+
+as.numeric(is.na(coluna))
+as.numeric("10")
+
+sum(is.na(coluna))
+
+logico < inteiro < numerico < caracter
 
 # R Markdown --------------------------------------------------------------
 
