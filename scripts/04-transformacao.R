@@ -371,9 +371,14 @@ imdb %>%
 
 # left join ---------------------------------------------------------------
 
+imdb_generos %>% 
+  distinct(diretor, ano)
+
 # exemplo 1
 imdb_com_generos <- imdb %>%
   left_join(imdb_generos, by = c("diretor", "ano"))
+
+imdb_com_generos %>% View
 
 # exemplo 2
 # podemos usar joins para fazer de-para
@@ -386,6 +391,10 @@ depara_cores <- tibble(
 imdb_cor <- imdb %>% 
   left_join(depara_cores, by = c("cor"))
 
+imdb_cor %>% 
+  select(titulo, cor, cor_ptbr) %>% 
+  View
+
 # exemplo 3
 
 imdb_mulheres <- imdb_generos %>% 
@@ -394,14 +403,38 @@ imdb_mulheres <- imdb_generos %>%
 imdb_so_mulheres <- imdb %>%
   inner_join(imdb_mulheres, by = c("diretor", "ano"))
 
+View(imdb_so_mulheres)
+
 # EXERCÍCIO 25
 # Calcule a média dos orçamentos e receitas para filmes feitos por
 # genero do diretor.
 
+imdb_com_generos %>% 
+  filter(!is.na(genero)) %>% 
+  group_by(genero) %>% 
+  summarise(
+    orcamento_medio = mean(orcamento, na.rm = TRUE),
+    receita_media = mean(receita, na.rm = TRUE)
+  )
+
 # gather ------------------------------------------------------------------
 # exemplo 1
 imdb_gather <- imdb %>% 
-  gather("importancia_ator", "nome_ator", starts_with("ator"))
+  mutate(id = 1:n()) %>% 
+  gather(
+    key = "importancia_ator", 
+    value = "nome_ator", 
+    ator_1, ator_2, ator_3
+  )
+
+imdb_spread <- imdb_gather %>% 
+  spread(
+    key = importancia_ator,
+    value = nome_ator
+  )
+
+View(imdb_gather)
+View(imdb_spread)
 
 # spread ------------------------------------------------------------------
 # exemplo 1
@@ -410,18 +443,46 @@ ano_genero <- imdb_com_generos %>%
   summarise(orcamento = mean(orcamento, na.rm = TRUE)) %>% 
   ungroup()
 
-ano_genero %>% 
-  spread(genero, orcamento)
+ano_genero %>%
+  filter(!is.na(genero)) %>% 
+  spread(genero, orcamento) %>% 
+  View
 
 # EXERCÍCIO 26
 # Crie uma tabela de dupla entrada de genero e classificacao
 
+imdb_com_generos %>%
+  filter(!is.na(genero)) %>% 
+  count(genero, classificacao) %>% 
+  spread(classificacao, n) %>% 
+  View
+
+table(imdb_com_generos$genero, imdb_com_generos$classificacao)
+
+tidyr::gather()
+tidyr::spread()
+
+tidyr::separate()
+tidyr::unite()
+
+
 # separate/unite
 # nest/unnest
+
+imdb %>% 
+  group_by(ano) %>% 
+  nest()
 
 # misc:
 # - count
 # - lag/lead
 # - if_else/case_when
 # xx_at, xx_if, xx_all
+
+mutate(imdb, nova_coluna = case_when(
+  ano < 1950 ~ "muito velho",
+  ano < 1980 ~ "velho",
+  ano < 2000 ~ "...",
+  TRUE ~  "outros"
+)) %>% View
 
