@@ -58,7 +58,7 @@ dados_jar_emp %>%
   theme_bw()
 ```
 
-Column
+Column 
 ------------------------------------------------
 ### respondentes
 
@@ -69,17 +69,94 @@ valueBox(nrow(dados_jar_emp), caption = "Nº respondentes", icon = "fa-users")
 ### sabores
 
 ```{r}
-valueBox(5, caption = "Nº sabores", icon = "fa-flask")
+valueBox(5, icon = "fa-flask")
 ```
 
 ### quesitos
 
 ```{r}
-valueBox(5, caption = "Nº quesitos", icon = "fa-list")
+valueBox(5, caption = "quesitos", icon = "fa-list")
 ```
 
 
 
 Sabores
 ================================================
+
+Column {data-width=2050}
+------------------------------------------------
+
+### Sabores
+
+```{r}
+dados_jar_emp %>%
+  gather(sabor, valor, SAB_BAUNILHA:SAB_MANGA) %>% 
+  mutate(
+    sabor = case_when(
+      sabor == "SAB_BANANA" ~ "Banana",
+      sabor == "SAB_BAUNILHA" ~ "Baunilha",
+      sabor == "SAB_MACA" ~ "Maçã",
+      sabor == "SAB_MANGA" ~ "Manga",
+      sabor == "SAB_MORANGO" ~ "Morango"
+    )
+  ) %>% 
+  ggplot(aes(x = valor)) +
+  geom_bar(fill = "orange", color = "black") +
+  geom_text(aes(y = ..count.. + 15, label = ..count..), stat = "count") + 
+  facet_wrap(~sabor) +
+  labs(y = "Frequência", x = "JAR") +
+  theme_bw()
+```
+
+
+Column
+------------------------------------------------
+
+### Banana
+
+```{r}
+dados_jar_emp %>% 
+  filter(!is.na(SAB_BANANA)) %>% 
+  nrow %>% 
+  valueBox(caption = "Banana", icon = "fa-users")
+```
+
+### Baunilha
+
+```{r}
+dados_jar_emp %>% 
+  filter(!is.na(SAB_BAUNILHA)) %>% 
+  nrow %>% 
+  valueBox(caption = "Baunilha", icon = "fa-users")
+```
+
+### Maçã
+
+```{r}
+dados_jar_emp %>% 
+  filter(!is.na(SAB_MACA)) %>% 
+  nrow %>% 
+  valueBox(caption = "Maçã", icon = "fa-users")
+```
+
+### Manga
+
+```{r}
+dados_jar_emp %>% 
+  filter(!is.na(SAB_MANGA)) %>% 
+  nrow %>% 
+  valueBox(caption = "Manga", icon = "fa-users")
+```
+
+### Morango
+
+```{r}
+dados_jar_emp %>% 
+  filter(!is.na(SAB_MORANGO)) %>% 
+  nrow %>% 
+  valueBox(caption = "Morango", icon = "fa-users")
+```
+
+Outros quesitos
+=================================================
 
