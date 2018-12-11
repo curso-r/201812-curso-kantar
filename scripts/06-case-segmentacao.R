@@ -76,7 +76,7 @@ plot_heatmap_grid <- function(modelo, colunas, nrow, ncol) {
   walk(colunas, plot_heatmap, modelo = modelo)
 }
 
-plot_heatmap_grid(modelo, 1:12, 4, 3)
+plot_heatmap_grid(modelo, 1:6, 3, 2)
 
 ### Clustering
 
@@ -86,7 +86,7 @@ SS <- (nrow(dados_modelo)-1)*sum(apply(dados_modelo, 2, var))
 for (i in 2:15) {
   SS[i] <- sum(kmeans(dados_modelo, centers=i)$withinss)
 }
-plot(wss, type = "l")
+plot(SS, type = "l")
 
 # Clusterização hierárquica
 som_cluster <- cutree(hclust(dist(modelo$codes[[1]])), 5)
@@ -126,5 +126,5 @@ dados_seg %>%
   mutate(novos_grupos = classificacao$cluster) %>% 
   select(GRUPO, novos_grupos) %>% 
   count(GRUPO, novos_grupos) %>% 
-  spread(novos_grupos, n) %>% 
+  spread(novos_grupos, n, fill = 0) %>% 
   View

@@ -89,7 +89,7 @@ Column {data-width=2050}
 ### Sabores
 
 ```{r}
-dados_jar_emp %>%
+p <- dados_jar_emp %>%
   gather(sabor, valor, SAB_BAUNILHA:SAB_MANGA) %>% 
   mutate(
     sabor = case_when(
@@ -102,10 +102,11 @@ dados_jar_emp %>%
   ) %>% 
   ggplot(aes(x = valor)) +
   geom_bar(fill = "orange", color = "black") +
-  geom_text(aes(y = ..count.. + 15, label = ..count..), stat = "count") + 
   facet_wrap(~sabor) +
   labs(y = "Frequência", x = "JAR") +
   theme_bw()
+
+plotly::ggplotly(p)
 ```
 
 
