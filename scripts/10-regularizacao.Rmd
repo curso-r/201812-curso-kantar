@@ -1,0 +1,123 @@
+---
+title: "Regularização"
+output: html_document
+---
+
+# Regularização
+
+- Penalizar os coeficientes no processo de estimação
+- Encolher os coeficientes na direção do zero 
+- Diminui a variância do modelo em troca de um pouco de viés
+
+$$
+f(X) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p
+$$
+
+Regressão ridge
+
+$$
+L(y, f(x)) - \lambda\sum_{i=1}^p\beta_i^2
+$$
+
+LASSO
+
+$$
+L(y, f(x)) - \lambda\sum_{i=1}^p|\beta_i|
+$$
+
+Podemos reescrever de outra forma:
+
+$$
+\underset{\beta}{\text{minimizar}}L(y, f(x)) \text{ sujeito à } \sum_{j=1}^p \beta_j^2 \leq s \text{ ou } \sum_{j=1}^p |\beta_j| \leq s
+$$
+
+```{r}
+receita <- recipe(price ~ . , data = diamantes) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_nzv(all_predictors()) %>%
+  step_corr(all_predictors()) %>%
+  step_log(all_outcomes()) %>% 
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "glmnet", 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+modelo
+```
+
+```{r}
+tune_grid <- expand.grid(alpha = c(0.05, 0.1, 0.15), lambda = c(0.01, 0.02, 0.03))
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "glmnet", 
+  trControl = trainControl(method = "cv", number = 5),
+  tuneGrid = tune_grid
+)
+
+modelo
+coef(modelo$finalModel, modelo$bestTune$lambda)
+```
+
+```{r}
+# Valores obs vs pred (log)
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = pred, x = log(price))) +
+  geom_point(alpha = 0.1) +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw()
+
+# Valores obs vs pred (exp)
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = exp(pred), x = price)) +
+  geom_point(alpha = 0.1) +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw() +
+  coord_cartesian(x = c(0, 20000), ylim = c(0, 25000))
+```
+
+
+```{r}
+receita <- recipe(price ~ . , data = diamantes) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_log(all_outcomes()) %>% 
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())
+
+tune_grid <- expand.grid(alpha = 0.05, lambda = c(0.01, 0.1, 1))
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "glmnet", 
+  trControl = trainControl(method = "cv", number = 5),
+  tuneGrid = tune_grid
+)
+
+modelo
+coef(modelo$finalModel, 1)
+```
+
+# Exercício (AmesHousing)
+
+1. Ajuste um modelo de regressão para o banco de dados 'AmesHousing'.
+
+2. Ajuste também um modelo de regressão com regularização.
+
+```{r}
+library(AmesHousing)
+library(dplyr)
+library(recipes)
+library(caret)
+
+ames <- make_ames()
+glimpse(ames)
+```

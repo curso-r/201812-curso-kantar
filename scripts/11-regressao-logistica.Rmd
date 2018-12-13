@@ -1,0 +1,234 @@
+---
+title: "Regressão logística"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Regressão vs Classificação
+
+Regressão: queremos prever uma variável numérica
+Classificação: queremos prever uma variável categórica
+
+O que muda?
+
+
+- Estimação
+- Métrica de performance
+
+# Regressão logística
+
+Seja Y uma variável que pode assumir duas categorias.
+
+Por exemplo: Y = 1 (bom cliente), Y = 0 (mau cliente)
+
+O que queremos é modelar 
+
+$$
+P(Y = 1| X)
+$$
+
+Então
+
+$$
+P(Y = 1| X) \approx f(X)
+$$
+
+
+
+Na regressão linear:
+
+$$
+f(x) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_px_p
+$$
+
+> Por que não podemos usar essa mesma função para uma variável categórica?
+
+
+
+Vamos usar então
+
+$$
+f(x) = \frac{1}{1 + e^{-( \beta_0 +  \beta_1*x_1 + \beta_2*x_2 + ... + \beta_p * x_p)}}
+$$
+
+Equivalentemente
+
+$$
+P(Y = 1| X) \approx \frac{1}{1 + e^{-( \beta_0 +  \beta_1*x_1 + \beta_2*x_2 + ... + \beta_p * x_p)}}
+$$
+e
+
+$$
+\log \left(\frac{P(Y = 1| X)}{1 - P(Y = 1| X)}\right) \approx \beta_0 +  \beta_1*x_1 + \beta_2*x_2 + ... + \beta_p * x_p
+$$
+
+Minimizar 
+
+$$
+L(y, \hat{f}(x))
+$$
+
+Antes, tínhamos
+
+$$
+L(y, f(x)) = \sum(y - f(x))^2
+$$
+
+Agora, queremos maximizar
+
+$$
+\prod_{i:Y_i = 1} P(Y_i=1|X_i) \prod_{i:Y_i = 0} (1 - P(Y_i=1|X_i))
+$$
+
+Portanto, como
+
+$$
+P(Y = 1| X) \approx f(X)
+$$
+
+vamos minimizar
+
+$$
+L(y, f(x)) = - \prod_{i:Y_i = 1} f(x_i) \prod_{i:Y_i = 0} (1 - f(x_i)))
+$$
+
+Previsões: probabilidade estimada de P(Y = 1|X). Precisamos definir então quando escolhemos Y = 1 e Y = 0.
+
+# Pacotes
+
+```{r}
+library(dplyr)
+library(recipes)
+library(caret)
+library(rsample)
+library(skimr)
+```
+
+# Banco de dados
+
+```{r}
+data("credit_data")
+glimpse(credit_data)
+```
+
+```{r}
+skim(credit_data)
+
+credit_data %>% 
+  group_by(Status) %>% 
+  skim()
+```
+
+# Ajustando modelos
+
+```{r}
+receita <- recipe(Status ~ ., data = credit_data) %>%
+  step_meanimpute(all_numeric(), -all_outcomes()) %>%
+  step_modeimpute(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_corr(all_predictors()) %>%
+  step_nzv(all_predictors())
+
+receita
+
+modelo <- train(
+  receita, 
+  credit_data, 
+  method = "glm", 
+  family = "binomial", 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+modelo
+varImp(modelo)
+```
+
+# Outras métricas
+
+```{r}
+credit_data %>% 
+  mutate(pred = predict(modelo, credit_data)) %>% 
+  select(Status, pred) %>% 
+  table
+```
+
+
+- sensibilidade: taxa de *true positives", entre os bons clientes, quantos foram previstos como bons clientes.
+
+- especificidade: taxa de *true negatives", entre os maus clientes, quantos foram previstos como maus clientes.
+
+- curva ROC
+
+```{r}
+metricas <- function(data, lev = NULL, model = NULL) {
+  c(
+    defaultSummary(data, lev, model), 
+    twoClassSummary(data, lev, model)
+  )
+}
+
+train_control <- trainControl(
+  method = "cv", 
+  number = 5, 
+  classProbs = TRUE,
+  summaryFunction = metricas,
+  savePredictions = TRUE
+)
+```
+
+Ajustando novamente o modelo
+
+```{r}
+modelo <- train(
+  receita, 
+  credit_data, 
+  method = "glm", 
+  family = "binomial", 
+  trControl = train_control
+)
+
+modelo
+summary(modelo)
+```
+
+```{r}
+credit_data <- credit_data %>% 
+  mutate(Status = forcats::lvls_reorder(Status, c(2, 1)))
+
+modelo <- train(
+  receita, 
+  credit_data, 
+  method = "glm", 
+  family = "binomial", 
+  trControl = train_control
+)
+
+modelo
+```
+
+Plotando a curva ROC
+
+```{r}
+library(pROC)
+
+plot.roc(modelo$pred$obs, modelo$pre$good, legacy.axes = TRUE)
+```
+
+# Exercício
+
+Ajuste um modelo de regressão logística p/ prever o churn de funcionários no banco de dados `attrition`.
+
+```{r}
+library(tidyverse)
+library(recipes)
+library(caret)
+library(rsample)
+
+
+data(attrition, package = "rsample")
+glimpse(attrition)
+```
+

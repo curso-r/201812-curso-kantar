@@ -1,0 +1,273 @@
+---
+title: "Regressão, recipes e caret"
+output: html_document
+---
+
+## Pacotes
+
+```{r}
+library(tidyverse)
+
+# install.packages("recipes")
+# install.packages("caret")
+
+library(recipes)
+library(caret)
+```
+
+## Regressão linear
+
+```{r}
+# install.packages("modelr")
+
+dados <- modelr::sim1
+dados
+
+ggplot(dados, aes(x, y)) +
+  geom_point() +
+  theme_bw()
+```
+
+A relação entre x e y vai ser descrita por uma função f(x) tal que
+
+$$
+y \approx f(x)
+$$
+
+Queremos encontrar uma f(x) que, para cada novo x, nos dê uma estimativa precisa de y.
+
+O modelo de regressão linear simples é dado por:
+
+$$
+f(x) = \beta_0 + \beta_1x
+$$
+
+- $\beta_0$ é chamado de intercepto
+- $\beta_1$ é chamado de coeficiente angular
+
+
+```{r}
+ggplot(dados, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw()
+```
+
+
+As estimativas de $\beta_0$ e $\beta_1$ serão os valores que minimizam a expressão
+
+$$
+L(y, f(x)) = \sum_{i=i}^{n} (y - f(x))^2 = \sum_{i=i}^{n} (y - (\beta_0 + \beta_1x))^2
+$$
+
+No R, podemos fazer isso facilmente usando a função `lm()`.
+
+```{r}
+ajuste <- lm(y ~ x, dados)
+summary(ajuste)
+```
+
+E se quiséssemos fazer predições:
+
+```{r}
+novas_obs <- data.frame(x = c(1, 2, 4, 10))
+predict(ajuste, novas_obs)
+```
+
+Fazer modelagem preditiva envolve 3 tarefas práticas:
+
+- especificar o modelo
+- treinar o modelo
+- fazer predições
+
+## Pacote recipes
+
+Vamos utilizar o pacote `recipes` como um ambiente padronizado para especificação de modelos.
+
+```{r}
+knitr::include_graphics("https://raw.githubusercontent.com/tidymodels/recipes/master/recipes_hex_thumb.png")
+```
+
+
+O pacote tem quatro principais funções:
+
+- `recipe()`: especifica o que você pretende fazer.
+
+- `step_()`: indica as possíveis transformações na base.
+
+- `prepare()`: faz os cálculos necessários para a aplicação das modificações.
+
+- `bake()`: aplica as modificações a uma base da dados.
+
+
+## Exemplo (diamonds)
+
+Queremos prever o valor de um diamante a partir das características de cada pedra.
+
+```{r}
+diamantes <- ggplot2::diamonds
+glimpse(diamantes)
+
+# Vamos transformar as variáveis ordinais em categóricas
+
+diamantes <- diamantes %>%
+  mutate(
+    cut = as.character(cut),
+    color = as.character(color),
+    clarity = as.character(clarity)
+  )
+
+
+```
+
+Vamos usar o pacote `recipes` para especificar nosso modelo.
+
+```{r}
+receita <- recipe(price ~ . , data = diamantes) %>%
+  step_dummy(all_nominal()) %>%
+  step_nzv(all_predictors()) %>%
+  step_corr(all_predictors())
+
+prep <- prep(receita, diamantes)
+
+base_treino <- bake(prep, diamantes)
+
+ajuste <- lm(price ~ ., base_treino)
+summary(ajuste)
+
+ajuste$coefficients
+```
+
+## Caret
+
+- Abreviação de *Classification And Regression Training*.
+
+- Padroniza a especificação do ajuste de modelos preditivos no R.
+
+- Abstrai a aplicação de diversos tipos de validação cruzada.
+
+- Também padroniza a forma de avaliar os resultados e fazer predições.
+
+- Permite processamento em paralelo.
+
+- Podemo especificar os modelos diretamente a partir do `recipes`.
+
+Para ajustar um modelo, sempre utilizamos a função `train()`.
+
+```{r}
+set.seed(14122018)
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "lm", 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+modelo
+
+# Para acessar o modelo final
+summary(modelo$finalModel)
+
+# Função para avaliar a "importância" de cada preditor
+varImp(modelo)
+```
+
+Fazendo previsões:
+
+```{r}
+# Valores obs vs pred
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = pred, x = price)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw()
+
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = pred, x = price)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw() +
+  coord_cartesian(x = c(0, 20000), ylim = c(0, 25000))
+```
+
+
+Vamos usar a transformação log para tentar melhorar o ajuste.
+
+```{r}
+diamantes <- diamantes %>% 
+  mutate(
+    depth2 = round(2 * z / (x + y), 3)*100, 
+    teste = near(depth, depth2, tol = 1)
+  ) %>% 
+  filter(teste == TRUE) %>% 
+  select(-depth2, -teste)
+
+receita <- recipe(price ~ . , data = diamantes) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_nzv(all_predictors()) %>%
+  step_corr(all_predictors()) %>%
+  step_log(all_outcomes())
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "lm", 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+  modelo
+```
+
+Precisamos deixar as métricas na mesma unidade para poder compará-las.
+
+```{r}
+summary_log <- function(data, lev = NULL, model = NULL) {
+  
+  metrics <- defaultSummary(data, lev, model)
+  
+  residuo <- exp(data$obs) - exp(data$pred)
+  metrics["RMSE"] <- sqrt(mean((residuo)^2))
+  metrics["MAE"] <- mean(abs(residuo))
+  
+  metrics
+}
+
+train_control <- trainControl(
+  method = "cv", 
+  number = 5, 
+  summaryFunction = summary_log
+)
+
+modelo <- train(
+  receita, 
+  diamantes, 
+  method = "lm", 
+  trControl = train_control
+)
+
+modelo
+```
+
+Fazendo as previsões:
+
+```{r}
+# Valores obs vs pred (log)
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = pred, x = log(price))) +
+  geom_point(alpha = 0.1) +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw()
+
+# Valores obs vs pred (exp)
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  ggplot(aes(y = exp(pred), x = price)) +
+  geom_point(alpha = 0.1) +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  theme_bw() +
+  coord_cartesian(x = c(0, 20000), ylim = c(0, 25000))
+```
