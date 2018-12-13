@@ -434,7 +434,7 @@ Vamos agregar os dados para termos apenas uma medida por ano.
 imdb %>% 
   filter(diretor == "Steven Spielberg") %>%
   group_by(ano) %>% 
-  mutate(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
+  summarise(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
   ggplot() +
   geom_line(aes(x = ano, y = nota_media))
 ```
@@ -449,8 +449,7 @@ imdb %>%
   ggplot() +
   geom_line(aes(x = ano, y = nota_media), alpha = 0.1) +
   geom_point(aes(x = ano, y = nota_media), alpha = 0.1) +
-  geom_text(aes(x = ano, y = nota_media , label = nota_media))
-  
+  geom_text(aes(x = ano, y = nota_media, label = nota_media))
 ```
 
 Neste caso, é útil reescreveremos o código da seguinte maneira.
@@ -461,8 +460,8 @@ imdb %>%
   group_by(ano) %>% 
   mutate(nota_media = mean(nota_imdb, na.rm = TRUE)) %>% 
   ggplot(aes(x = ano, y = nota_media)) +
-  geom_point() +
-  geom_line() +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.1) +
   geom_text(aes(label = nota_media))
 ```
 
@@ -472,15 +471,26 @@ imdb %>%
 1. Selecione um dos atores que fez mais filmes e estude a nota de seus filmes no IMDB ao longo do tempo. Utilize apenas a coluna `ator_1`.
 
 ```{r}
-
+imdb %>% 
+  filter(ator_1 == "Johnny Depp") %>%
+  ggplot(aes(x = ano, y = nota_imdb)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.1) +
+  geom_text(aes(label = nota_imdb))
 ```
 
 2. Calcule a nota média dos filmes por ano e faça uma série temporal da nota anual.
 
 ```{r}
-
+imdb %>% 
+  filter(ator_1 == "Johnny Depp") %>%
+  group_by(ano) %>% 
+  mutate(nota_media = round(mean(nota_imdb, na.rm = TRUE), 1)) %>% 
+  ggplot(aes(x = ano, y = nota_media)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.1) +
+  geom_text(aes(label = nota_media), nudge_x = 1)
 ```
-
 
 E se quiséssemos utilizar as 3 colunas de atores no exemplo 1?
 
@@ -493,7 +503,15 @@ imdb %>%
 Repita o exercício 1 utilizando agora as três colunas de ator.
 
 ```{r}
-
+imdb %>% 
+  gather(posicao, ator, ator_1, ator_2, ator_3) %>% 
+  filter(ator == "Johnny Depp") %>%
+  group_by(ano) %>% 
+  mutate(nota_media = round(mean(nota_imdb, na.rm = TRUE), 1)) %>% 
+  ggplot(aes(x = ano, y = nota_media)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.1) +
+  geom_text(aes(label = nota_media), nudge_x = 1)
 ```
 
 

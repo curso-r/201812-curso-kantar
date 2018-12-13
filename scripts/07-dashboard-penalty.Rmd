@@ -11,6 +11,7 @@ output:
 library(tidyverse)
 library(skimr)
 library(flexdashboard)
+# options(encoding = "WINDOWS-1252")
 ```
 
 ```{r}
@@ -22,7 +23,7 @@ dados_jar_emp <- dados_jar_emp %>%
 
 
 Visão geral
-================================================
+=========================================================
 
 Column {.tabset data-width=2050}
 ------------------------------------------------
@@ -32,7 +33,7 @@ Column {.tabset data-width=2050}
 ```{r}
 dados_jar_emp %>% 
   select(SABOR:PURCHASE) %>%
-  skim() %>% 
+  skim_to_wide() %>% 
   kable(format = "html")
 ```
 
@@ -58,12 +59,13 @@ dados_jar_emp %>%
   theme_bw()
 ```
 
+
 Column 
 ------------------------------------------------
 ### respondentes
 
 ```{r}
-valueBox(nrow(dados_jar_emp), caption = "Nº respondentes", icon = "fa-users")
+valueBox(nrow(dados_jar_emp), caption = "Nº respondentes", icon = "fa-users", color = "red")
 ```
 
 ### sabores
@@ -78,8 +80,6 @@ valueBox(5, icon = "fa-flask")
 valueBox(5, caption = "quesitos", icon = "fa-list")
 ```
 
-
-
 Sabores
 ================================================
 
@@ -89,22 +89,31 @@ Column {data-width=2050}
 ### Sabores
 
 ```{r}
-p <- dados_jar_emp %>%
-  gather(sabor, valor, SAB_BAUNILHA:SAB_MANGA) %>% 
-  mutate(
-    sabor = case_when(
-      sabor == "SAB_BANANA" ~ "Banana",
-      sabor == "SAB_BAUNILHA" ~ "Baunilha",
-      sabor == "SAB_MACA" ~ "Maçã",
-      sabor == "SAB_MANGA" ~ "Manga",
-      sabor == "SAB_MORANGO" ~ "Morango"
-    )
-  ) %>% 
-  ggplot(aes(x = valor)) +
-  geom_bar(fill = "orange", color = "black") +
-  facet_wrap(~sabor) +
-  labs(y = "Frequência", x = "JAR") +
-  theme_bw()
+  p <- dados_jar_emp %>%
+    gather(sabor, valor, SAB_BAUNILHA:SAB_MANGA) %>%
+    filter(!is.na(valor)) %>% 
+    mutate(
+      sabor = case_when(
+        sabor == "SAB_BANANA" ~ "Banana",
+        sabor == "SAB_BAUNILHA" ~ "Baunilha",
+        sabor == "SAB_MACA" ~ "Maçã",
+        sabor == "SAB_MANGA" ~ "Manga",
+        sabor == "SAB_MORANGO" ~ "Morango"
+      ),
+      valor2 = case_when(
+        valor == 1 ~ "Muito menos",
+        valor == 2 ~ "Menos",
+        valor == 3 ~ "Ideal",
+        valor == 4 ~ "Mais",
+        valor == 5 ~ "Muito mais"
+      ),
+      valor2 = fct_reorder(valor2, valor),
+    ) %>% 
+    ggplot(aes(x = valor2)) +
+    geom_bar(fill = "orange", color = "black") +
+    facet_wrap(~sabor) +
+    labs(y = "Frequência", x = "JAR") +
+    theme_bw()
 
 plotly::ggplotly(p)
 ```
@@ -160,4 +169,20 @@ dados_jar_emp %>%
 
 Outros quesitos
 =================================================
+
+```{r}
+dados_jar_emp %>%
+  gather(sabor, valor_sabor, SAB_BAUNILHA:SAB_MANGA) %>% 
+  gather(var, valor_var, SAB_BOCA:CONSIST) %>%
+  group_by(sabor, var) %>% 
+  count(valor_var) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ungroup() %>% 
+  mutate(valor_var = as.factor(valor_var)) %>% 
+  ggplot(aes(x = var, y = prop, fill = valor_var)) +
+  geom_col() +
+  facet_wrap(~sabor) +
+  labs(y = "Proporção", x = "JAR") +
+  theme_bw()
+```
 

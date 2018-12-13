@@ -1,6 +1,8 @@
 library(tidyverse)
 library(skimr)
 
+# install.packages("skimr")
+
 # Dados --------------------------------------------------------------------
 
 dados_jar <- haven::read_spss(
@@ -21,14 +23,15 @@ glimpse(dados_jar_emp)
 dados_jar_emp <- dados_jar_emp %>% 
   mutate_all(funs(as.numeric))
 
+glimpse(dados_jar_emp)
 
 # Descritiva ---------------------------------------------------------------
 
 dados_jar_emp %>% 
-  select(SABOR:PURCHASE) %>%
-  mutate_all(funs(as.character)) %>% 
-  skim() %>% 
-  kable(format = "html")
+  select(SABOR:PURCHASE, CELA) %>%
+  #mutate_all(funs(as.factor)) %>% 
+  group_by(CELA) %>% 
+  skim()
   
 
 # Dados --------------------------------------------------------------------
@@ -37,5 +40,6 @@ dados_jar_emp %>%
   ggplot(aes(x = OL_OVERALL)) +
   geom_bar(fill = "orange", color = "black") +
   geom_text(aes(y = ..count.. + 10, label = ..count..), stat = "count") + 
+  facet_wrap(~CELA)  +
   labs(y = "Frequência") +
   theme_bw()

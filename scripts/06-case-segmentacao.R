@@ -30,6 +30,7 @@ dados_treino <- dados_seg %>%
 # Padronizando as variáveis
 dados_treino <- scale(dados_treino)
 
+set.seed(5893524)
 # Criando o grid
 som_grid <- kohonen::somgrid(xdim = 25, ydim = 25, topo = "hexagonal")
 
@@ -56,8 +57,8 @@ plot(modelo, type = "dist.neighbours")
 plot(
   modelo, 
   type = "property", 
-  property = modelo$codes[[1]][, 5],
-  main = colnames(modelo$data[[1]])[5]
+  property = modelo$codes[[1]][, 48],
+  main = colnames(modelo$data[[1]])[48]
 )
 
 plot_heatmap <- function(modelo, id_coluna) {
@@ -76,7 +77,7 @@ plot_heatmap_grid <- function(modelo, colunas, nrow, ncol) {
   walk(colunas, plot_heatmap, modelo = modelo)
 }
 
-plot_heatmap_grid(modelo, 1:6, 3, 2)
+plot_heatmap_grid(modelo, 10:15, 3, 2)
 
 ### Clustering
 
@@ -89,7 +90,7 @@ for (i in 2:15) {
 plot(SS, type = "l")
 
 # Clusterização hierárquica
-som_cluster <- cutree(hclust(dist(modelo$codes[[1]])), 5)
+som_cluster <- cutree(hclust(dist(modelo$codes[[1]])), 7)
 
 # Gráfico
 cores <- case_when(
@@ -97,7 +98,8 @@ cores <- case_when(
   som_cluster == 2 ~ "red",
   som_cluster == 3 ~ "green",
   som_cluster == 4 ~ "yellow",
-  som_cluster == 5 ~ "pink"
+  som_cluster == 5 ~ "blue",
+  som_cluster == 6 ~ "gray",
 )
 
 plot(
@@ -123,7 +125,7 @@ classificacao <- tibble(
   right_join(classificacao, by = "no")
 
 dados_seg %>% 
-  mutate(novos_grupos = classificacao$cluster) %>% 
+  mutate(novos_grupos = classificacao$cluster) %>% View 
   select(GRUPO, novos_grupos) %>% 
   count(GRUPO, novos_grupos) %>% 
   spread(novos_grupos, n, fill = 0) %>% 
