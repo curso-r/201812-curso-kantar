@@ -14,7 +14,6 @@ Classificação: queremos prever uma variável categórica
 
 O que muda?
 
-
 - Estimação
 - Métrica de performance
 
@@ -45,8 +44,6 @@ f(x) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ... + \beta_px_p
 $$
 
 > Por que não podemos usar essa mesma função para uma variável categórica?
-
-
 
 Vamos usar então
 
@@ -80,7 +77,7 @@ $$
 Agora, queremos maximizar
 
 $$
-\prod_{i:Y_i = 1} P(Y_i=1|X_i) \prod_{i:Y_i = 0} (1 - P(Y_i=1|X_i))
+L = -\prod_{i:Y_i = 1} P(Y_i=1|X_i) \prod_{i:Y_i = 0} (1 - P(Y_i=1|X_i))
 $$
 
 Portanto, como
@@ -104,6 +101,7 @@ library(dplyr)
 library(recipes)
 library(caret)
 library(rsample)
+# install.packages("rsample")
 library(skimr)
 ```
 

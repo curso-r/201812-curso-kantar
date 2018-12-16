@@ -63,7 +63,7 @@ $$
 No R, podemos fazer isso facilmente usando a função `lm()`.
 
 ```{r}
-ajuste <- lm(y ~ x, dados)
+ajuste <- lm(log(y) ~ x, dados)
 summary(ajuste)
 ```
 
@@ -116,14 +116,12 @@ diamantes <- diamantes %>%
     color = as.character(color),
     clarity = as.character(clarity)
   )
-
-
 ```
 
 Vamos usar o pacote `recipes` para especificar nosso modelo.
 
 ```{r}
-receita <- recipe(price ~ . , data = diamantes) %>%
+receita <- recipe(price ~ ., data = diamantes) %>%
   step_dummy(all_nominal()) %>%
   step_nzv(all_predictors()) %>%
   step_corr(all_predictors())
@@ -157,19 +155,19 @@ Para ajustar um modelo, sempre utilizamos a função `train()`.
 ```{r}
 set.seed(14122018)
 
-modelo <- train(
+modelo2 <- train(
   receita, 
   diamantes, 
-  method = "lm", 
+  method = "lm",
   trControl = trainControl(method = "cv", number = 5)
 )
 
-modelo
+modelo2
 
 # Para acessar o modelo final
 summary(modelo$finalModel)
 
-# Função para avaliar a "importância" de cada preditor
+  # Função para avaliar a "importância" de cada preditor
 varImp(modelo)
 ```
 
@@ -191,6 +189,11 @@ diamantes %>%
   geom_abline(intercept = 0, slope = 1, color = "blue") +
   theme_bw() +
   coord_cartesian(x = c(0, 20000), ylim = c(0, 25000))
+
+diamantes %>% 
+  mutate(pred = predict(modelo, diamantes)) %>% 
+  arrange(desc(pred)) %>% 
+  View()
 ```
 
 
@@ -218,7 +221,7 @@ modelo <- train(
   trControl = trainControl(method = "cv", number = 5)
 )
 
-  modelo
+modelo
 ```
 
 Precisamos deixar as métricas na mesma unidade para poder compará-las.

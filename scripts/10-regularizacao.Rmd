@@ -16,13 +16,13 @@ $$
 Regressão ridge
 
 $$
-L(y, f(x)) - \lambda\sum_{i=1}^p\beta_i^2
+L(y, f(x)) + \lambda\sum_{i=1}^p\beta_i^2
 $$
 
 LASSO
 
 $$
-L(y, f(x)) - \lambda\sum_{i=1}^p|\beta_i|
+L(y, f(x)) + \lambda\sum_{i=1}^p|\beta_i|
 $$
 
 Podemos reescrever de outra forma:
@@ -39,6 +39,8 @@ receita <- recipe(price ~ . , data = diamantes) %>%
   step_log(all_outcomes()) %>% 
   step_center(all_predictors()) %>%
   step_scale(all_predictors())
+
+# install.packages("glmnet")
 
 modelo <- train(
   receita, 
@@ -120,4 +122,31 @@ library(caret)
 
 ames <- make_ames()
 glimpse(ames)
+ames$Sale_Price
 ```
+
+
+```{r}
+library(leaflet)
+
+cores <- ames %>% 
+  mutate(
+    preco_c = cut(Sale_Price, breaks = quantile(Sale_Price), labels = c("1", "2", "3", "4")),
+    cor = case_when(
+      preco_c == "1" ~ "green",
+      preco_c == "2" ~ "orange",
+      preco_c == "3" ~ "orange",
+      preco_c == "4" ~ "red"
+    )
+  ) %>% 
+  .$cor
+
+icones <- leaflet::makeAwesomeIcon(markerColor = cores)
+
+ames %>%
+  sample_n(100) %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addAwesomeMarkers(lng = ~Longitude, lat = ~Latitude, icon = icones)
+```
+
