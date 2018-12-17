@@ -1,0 +1,210 @@
+---
+title: "Exercícios"
+output: html_document
+---
+
+# funções auxiliares e pacotes
+```{r}
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(purrr)
+library(recipes)
+library(caret)
+library(xgboost)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+
+summary_log <- function(data, lev = NULL, model = NULL) {
+  
+  metrics <- defaultSummary(data, lev, model)
+  
+  residuo <- exp(data$obs) - exp(data$pred)
+  metrics["RMSE"] <- sqrt(mean((residuo)^2))
+  metrics["MAE"] <- mean(abs(residuo))
+  
+  metrics
+}
+
+
+```
+
+
+# dados
+
+```{r}
+data(diamonds, package = "ggplot2")
+glimpse(diamonds)
+
+diamonds <- diamonds %>%
+  mutate(
+    cut = as.character(cut),
+    color = as.character(color),
+    clarity = as.character(clarity)
+  )
+
+id_novos <- sample(nrow(diamonds), size = 1000)
+novos_diamantes <- diamonds[id_novos,]
+diamantes <- diamonds[-id_novos,]
+```
+
+# Receita
+
+```{r}
+receita <- recipe(price ~ . , data = diamantes) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_nzv(all_predictors()) %>%
+  step_corr(all_predictors()) %>%
+  step_log(all_outcomes()) %>% 
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())
+
+receita_prep <- prep(receita, training = diamantes)
+
+```
+
+# Modelo de regressão (aula passada)
+
+```{r}
+train_control_lm <- trainControl(
+  method = "cv", 
+  number = 3, 
+  summaryFunction = summary_log
+)
+
+modelo_lm <- train(
+  receita, 
+  diamantes, 
+  method = "lm", 
+  trControl = train_control_lm
+)
+
+modelo_lm
+varImp(modelo_lm)
+```
+
+# Modelo RPART (árvore de decisão)
+
+```{r}
+# info_rpart <- caret::getModelInfo("rpart", FALSE)
+train_control_rpart <- trainControl(
+  method = "cv", 
+  number = 3,
+  verboseIter = TRUE
+)
+
+modelo_rpart <- train(
+  receita, 
+  diamantes, 
+  method = "rpart", 
+  trControl = train_control_rpart,
+  control = rpart.control(minsplit = 2, minbucket = 1, maxdepth = 20),
+  tuneLength = 5
+)
+
+modelo_rpart
+varImp(modelo_rpart)
+plot(modelo_rpart)
+rpart.plot(modelo_rpart$finalModel)
+predict(modelo_rpart$finalModel) %>% head(20)
+
+```
+
+Fazendo as previsões:
+
+```{r}
+diamantes_ok <- bind_rows(
+  bake(receita_prep, diamantes) %>% mutate(base = "treino"),
+  bake(receita_prep, novos_diamantes) %>% mutate(base = "teste")
+) 
+
+resumo <- diamantes_ok %>%
+  mutate(
+    pred_rpart = predict(modelo_rpart, newdata = .),
+    pred_lm = predict(modelo_lm, newdata = .)
+  ) %>%
+  select(base, starts_with("pred_"), price) %>%
+  gather(modelo, pred, starts_with("pred_")) %>%
+  group_by(modelo, base) %>%
+  nest %>%
+  mutate(
+    rmse = map_dbl(data, ~ RMSE(.x$pred, .x$price))
+  )
+
+resumo
+```
+
+
+
+
+
+# EXERCÍCIO ##########################################
+# Refaça o modelo acima usando Random Forest e compare os resultados
+
+# Modelo Random Forest
+
+```{r}
+# info_rf <- caret::getModelInfo("rf", FALSE)
+```
+
+
+
+Fazendo as previsões:
+
+1) Inclua uma nova coluna para as previsões do novo modelo Random Forest
+2) Conclua qual modelo desempenhou melhor pelo critério de RMSE
+
+```{r}
+resumo <- diamantes_ok %>%
+  mutate(
+    pred_rpart = predict(modelo_rpart, newdata = .),
+    pred_lm = predict(modelo_lm, newdata = .)
+  ) %>%
+  select(base, starts_with("pred_"), price) %>%
+  gather(modelo, pred, starts_with("pred_")) %>%
+  group_by(modelo, base) %>%
+  nest %>%
+  mutate(
+    rmse = map_dbl(data, ~ RMSE(.x$pred, .x$price))
+  )
+```
+
+
+
+
+
+
+
+# EXERCÍCIO ##########################################
+# Repira para o modelo XGBOOST
+
+# Modelo Random Forest
+
+```{r}
+# info_xgb <- caret::getModelInfo("xgbTree", FALSE)
+```
+
+
+
+Fazendo as previsões:
+
+1) Inclua uma nova coluna para as previsões do novo modelo Random Forest
+2) Conclua qual modelo desempenhou melhor pelo critério de RMSE
+
+```{r}
+resumo <- diamantes_ok %>%
+  mutate(
+    pred_rpart = predict(modelo_rpart, newdata = .),
+    pred_lm = predict(modelo_lm, newdata = .)
+  ) %>%
+  select(base, starts_with("pred_"), price) %>%
+  gather(modelo, pred, starts_with("pred_")) %>%
+  group_by(modelo, base) %>%
+  nest %>%
+  mutate(
+    rmse = map_dbl(data, ~ RMSE(.x$pred, .x$price))
+  )
+```
+
