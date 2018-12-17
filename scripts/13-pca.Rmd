@@ -1,0 +1,162 @@
+---
+title: "Componentes principais"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+# Intuição
+
+Vamos considerar um conjunto de p variáveis $X_1, \dots, X_p$.
+
+$$
+Z_1 = \phi_{11} X_1 + \dots + \phi_{1p} X_p \\
+Z_2 = \phi_{21} X_1 + \dots + \phi_{2p} X_p \\
+\vdots \\
+Z_p = \phi_{p1} X_1 + \dots + \phi_{pp} X_p
+$$
+
+- Os componentes Z são não-correlacionados
+- $VAR(Z_1) > VAR(Z_2) > \cdots > VAR(Z_p)$
+
+# Exemplos
+
+```{r}
+a <- 1
+tetraedro <- data.frame( x = c(a * sqrt(3)/3, - a * sqrt(3)/6, - a * sqrt(3)/6, 0),
+                         y = c(0, - a/2, a/2, 0),
+                         z = c(0, 0, 0, a * sqrt(6)/3),
+                         cor = c("a", "b", "c", "d"),
+                         id = 1:4)
+
+tetraedro_linhas <- combn(x = tetraedro$id, m = 2) %>%
+  t() %>%
+  as.data.frame.matrix() %>%
+  set_names(c("id1", "id2")) %>%
+  mutate(id_par = 1:length(id1)) %>%
+  gather(id_ordem, id, id1, id2) %>%
+  left_join(tetraedro, by = "id") %>%
+  arrange(id_ordem)
+
+```
+
+```{r}
+tetraedro_pc <- prcomp(tetraedro %>% dplyr::select(x, y, z)) # PCA acontece aqui
+summary(tetraedro_pc)$importance
+```
+
+3 dimensões (100% da variância)
+
+```{r}
+library(plotly)
+
+plot_ly(tetraedro_linhas, x = ~x, y = ~y, z = ~z) %>%
+  add_lines() %>%
+  add_markers()
+```
+
+2 dimensões (67% da variância)
+
+```{r}
+tetraedro_pc_pred <- tetraedro_pc %>% predict %>% as.data.frame
+plot_ly(tetraedro_pc_pred, x = ~PC2, y = ~PC3, z = ~PC3) %>%
+  add_lines() %>%
+  add_markers()
+```
+
+# Outra forma
+
+```{r}
+x <- c()
+y <- c()
+z <- c()
+c <- c()
+
+for (i in 1:62) {
+  r <- 20 * cos(i / 20)
+  x <- c(x, r * cos(i))
+  y <- c(y, r * sin(i))
+  z <- c(z, i)
+  c <- c(c, i)
+}  
+
+forma_legal <- data.frame(x, y, z, c)
+```
+
+Fazendo PCA
+
+```{r}
+forma_legal_pc <- forma_legal %>% 
+  dplyr::select(x, y, z) %>% 
+  prcomp() # PCA acontece aqui
+
+summary(forma_legal_pc)$importance
+```
+
+
+3 dimensões (100% da variância)
+
+```{r, cache = FALSE}
+plot_ly(forma_legal, x = ~x, y = ~y, z = ~z, type = "scatter3d", mode = "markers+lines",
+        line = list(width = 6, color = ~c, colorscale = 'Viridis'),
+        marker = list(size = 3.5, color = ~c, colorscale = 'Greens', 
+                      cmin = -20, cmax = 50))
+```
+
+2 dimensões (82% da variância)
+
+```{r, cache = FALSE}
+forma_legal_pc_pred <- forma_legal_pc %>% predict %>% as.data.frame
+plot_ly(forma_legal_pc_pred, x = ~PC1, y = ~PC2, z = 1, type = 'scatter3d', mode = 'lines+markers',
+        line = list(width = 6, color = ~c, colorscale = 'Viridis'),
+        marker = list(size = 3.5, color = ~c, colorscale = 'Greens', 
+                      cmin = -20, cmax = 50))
+```
+
+# Pontos importantes
+
+- É bastante usado para fazer redução de dimensionalidade.
+- Como estamos focados na variância, precisamos centralizar as variáveis.
+
+# Exercício
+
+Aplicar PCA para a base de segmentação.
+
+```{r}
+dados_seg <- haven::read_spss(
+  "../dados/segmentacao/Strategy_FINAL_com peso_S1_v2.sav"
+)
+
+View(dados_seg)
+
+pca_seg <- dados_seg %>% 
+  select(starts_with("S1_")) %>%
+  scale(center = TRUE, scale = FALSE) %>% 
+  prcomp()
+
+summary(pca_seg)$importance
+
+pca_seg$rotation %>%
+  as.tibble() %>% 
+  rownames_to_column(var = "Pergunta") %>% 
+  gather(Componente, Peso, starts_with("PC")) %>% 
+  mutate(
+    Pergunta = as.numeric(Pergunta),
+    Componente = str_remove(Componente, "PC"),
+    Componente = as.numeric(Componente)
+  ) %>% 
+  group_by(Componente) %>% 
+  mutate(
+    Peso_abs = abs(Peso),
+    Peso = ifelse(Peso_abs > quantile(Peso_abs, 0.9), Peso, NA)
+  ) %>% 
+  ggplot(aes(x = Componente, y = Pergunta)) +
+  geom_tile(aes(fill = Peso)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_gradient(low = "blue", high = "red", na.value = "white") +
+  theme_minimal()
+  
+```
+

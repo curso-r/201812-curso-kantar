@@ -1,0 +1,53 @@
+---
+title: "Análise fatorial"
+output: html_document
+---
+
+$$
+F_1 = \phi_{11} X_1 + \dots + \phi_{1p} X_p + \epsilon_1\\
+F_2 = \phi_{21} X_1 + \dots + \phi_{2p} X_p + \epsilon_2\\
+\vdots \\
+F_p = \phi_{p1} X_1 + \dots + \phi_{pp} X_p + \epsilon_p
+$$
+
+- O número de fatores deve ser escolhido previamente.
+- Permite que parte da variabilidade das variáveis X seja explicada pelos fatores e parte por erros aleatórios.
+- Os fatores são formados por variáveis altamente correlacionadas.
+
+```{r}
+dados_seg <- haven::read_spss(
+  "../dados/segmentacao/Strategy_FINAL_com peso_S1_v2.sav"
+)
+
+m <- 5
+
+fa_seg <- dados_seg %>% 
+  select(starts_with("S1_")) %>%
+  scale(center = TRUE, scale = FALSE) %>% 
+  factanal(m)
+
+fa_seg$loadings
+
+fa_seg$loadings %>%
+  matrix(48, m) %>% 
+  as.tibble() %>% 
+  rownames_to_column(var = "Pergunta") %>% 
+  gather(Fator, Peso, starts_with("V")) %>% 
+  mutate(
+    Pergunta = as.numeric(Pergunta),
+    Fator = str_remove(Fator, "V"),
+    Fator = as.numeric(Fator)
+  ) %>% 
+  group_by(Fator) %>% 
+  mutate(
+    Peso_abs = abs(Peso),
+    Peso = ifelse(Peso_abs > quantile(Peso_abs, 0.9), Peso, NA)
+  ) %>% 
+  ggplot(aes(x = Fator, y = Pergunta)) +
+  geom_tile(aes(fill = Peso)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_gradient(low = "blue", high = "red", na.value = "white") +
+  theme_minimal()
+```
+
+
