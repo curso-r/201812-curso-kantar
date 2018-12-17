@@ -59,6 +59,9 @@ library(recipes)
 library(caret)
 
 data("credit_data")
+
+credit_data <- credit_data %>% 
+  mutate(Status = forcats::lvls_reorder(Status, c(2, 1)))
 ```
 
 ```{r}
@@ -84,6 +87,12 @@ train_control <- trainControl(
   savePredictions = TRUE
 )
 
+
+```
+
+Modelo logístico
+
+```{r}
 modelo_logistico <- train(
   receita, 
   credit_data, 
@@ -93,14 +102,115 @@ modelo_logistico <- train(
 )
 
 modelo_logistico
-
-modelo_svm <- train(
-  receita, 
-  credit_data, 
-  method = "svmRadial", 
-  trControl = train_control
-)
-
-modelo
 ```
 
+Random forest
+
+```{r}
+
+tune_grid <- expand.grid(
+  min.node.size = 5,
+  splitrule = "gini",
+  mtry = 2
+)
+
+modelo_rf <- train(
+  receita, 
+  credit_data, 
+  method = "ranger", 
+  trControl = train_control,
+  importance = "impurity",
+  metric = "ROC",
+  tuneGrid = tune_grid
+)
+
+modelo_rf
+
+```
+
+SVM com kernel linear
+
+```{r}
+receita_svm <- receita %>% 
+  step_center(all_predictors()) %>% 
+  step_scale(all_predictors())
+
+modelo_svm_lin <- train(
+  receita_svm, 
+  credit_data, 
+  method = "svmLinear", 
+  trControl = train_control,
+  metric = "ROC"
+)
+
+modelo_svm_lin
+```
+
+
+SVM com kernel polinomial
+
+```{r}
+tune_grid <- data.frame(degree = 2, scale = 0.01, C = 1)
+
+modelo_svm_poli <- train(
+  receita_svm, 
+  credit_data, 
+  method = "svmPoly", 
+  trControl = train_control,
+  metric = "ROC"
+)
+
+modelo_svm_poli
+```
+
+
+SVM com kernel radial
+
+```{r}
+tune_grid <- data.frame(C = 0.5, sigma = 0.04)
+
+modelo_svm_rad <- train(
+  receita_svm, 
+  credit_data, 
+  method = "svmRadial", 
+  trControl = train_control,
+  metric = "ROC"
+)
+
+modelo_svm_rad
+```
+
+XGBOOST
+
+```{r}
+tune_grid <- expand.grid(
+  gamma = 0,
+  min_child_weight = 1,
+  nrounds = 150,
+  max_depth = 1,
+  eta = 0.4,
+  colsample_bytree = 0.6,
+  subsample = 0.75
+)
+
+modelo_xg <- train(
+  receita, 
+  credit_data, 
+  method = "xgbTree", 
+  trControl = train_control,
+  tuneGrid = tune_grid,
+  metric = "ROC"
+)
+
+modelo_xg
+
+```
+
+
+# Misc
+
+- Support vector regression: SVM para regressão (variável resposta numérica)
+
+- SVM para mais de duas classes:
+    - One-Versus-One Classification
+    - One-Versus-All Classification
