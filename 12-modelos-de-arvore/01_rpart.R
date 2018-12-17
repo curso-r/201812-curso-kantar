@@ -73,6 +73,7 @@ train_control <- trainControl(
 )
 
 # ajuste de uma arvore de decisao usando rpart no CARET --------------------------------#
+# info_rpart <- caret::getModelInfo("rpart", FALSE)
 arvore_caret <- train(
     diabetes ~ pressao + glicose,
     data = pacientes,
