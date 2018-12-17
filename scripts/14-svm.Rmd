@@ -1,0 +1,106 @@
+---
+title: "SVM"
+output: html_document
+---
+
+Em certos problemas de classificação, podemos usar hiperplanos como classificadores.
+
+```{r}
+knitr::include_graphics("../img/svm-1.png")
+```
+
+Neste caso, há infinitos hiperplanos que podem ser escolhidos.
+
+```{r}
+knitr::include_graphics("../img/svm-2.png")
+```
+
+Uma forma de escolher o "melhor" hiperplano é maximizar a distância perpendicular entre ele e os pontos mais próximos. Esse método é chamado de *Maximal Margin Classifier*.
+
+```{r}
+knitr::include_graphics("../img/svm-3.png")
+```
+
+Esse modelo no entanto não pode ser usado quando os pontos não podem ser separados por um hiperplano.
+
+```{r}
+knitr::include_graphics("../img/svm-4.png")
+```
+
+Além disso, esse modelo pode ter alta variância e há uma grande chance de estarmos overfitando os dados.
+
+```{r}
+knitr::include_graphics("../img/svm-5.png")
+```
+
+O modelo chamado *Support Vector Classifier* é uma solução para esse problema, permitindo que alguns pontos da base de treino sejam classificados de forma errada.
+
+```{r}
+knitr::include_graphics("../img/svm-6.png")
+```
+
+No entanto, o *Support Vector Classifier* vai atuar mal em relações não-lineares.
+
+```{r}
+knitr::include_graphics("../img/svm-7.png")
+```
+
+Por fim, o SVM é um modelo que permite encontrar fronteiras não-lineares.
+
+```{r}
+knitr::include_graphics("../img/svm-8.png")
+```
+
+# Exemplo
+
+```{r}
+library(tidyverse)
+library(recipes)
+library(caret)
+
+data("credit_data")
+```
+
+```{r}
+receita <- recipe(Status ~ ., data = credit_data) %>%
+  step_meanimpute(all_numeric(), -all_outcomes()) %>%
+  step_modeimpute(all_nominal(), -all_outcomes()) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_corr(all_predictors()) %>%
+  step_nzv(all_predictors())
+
+metricas <- function(data, lev = NULL, model = NULL) {
+  c(
+    defaultSummary(data, lev, model), 
+    twoClassSummary(data, lev, model)
+  )
+}
+
+train_control <- trainControl(
+  method = "cv", 
+  number = 5, 
+  classProbs = TRUE,
+  summaryFunction = metricas,
+  savePredictions = TRUE
+)
+
+modelo_logistico <- train(
+  receita, 
+  credit_data, 
+  method = "glm", 
+  family = "binomial", 
+  trControl = train_control
+)
+
+modelo_logistico
+
+modelo_svm <- train(
+  receita, 
+  credit_data, 
+  method = "svmRadial", 
+  trControl = train_control
+)
+
+modelo
+```
+
