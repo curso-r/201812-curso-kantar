@@ -51,3 +51,37 @@ fa_seg$loadings %>%
 ```
 
 
+```{r}
+perguntas <- fa_seg$loadings %>%
+  matrix(48, m) %>% 
+  as.tibble() %>% 
+  rownames_to_column(var = "Pergunta") %>% 
+  gather(Fator, Peso, starts_with("V")) %>% 
+  mutate(
+    Pergunta = as.numeric(Pergunta),
+    Fator = str_remove(Fator, "V"),
+    Fator = as.numeric(Fator)
+  ) %>% 
+  group_by(Fator) %>% 
+  mutate(
+    Peso_abs = abs(Peso),
+    Peso = ifelse(Peso_abs > quantile(Peso_abs, 0.9), Peso, NA)
+  ) %>% 
+  filter(Fator == 5, !is.na(Peso)) %>% 
+  .$Pergunta
+
+map(
+  perguntas,
+  function(num) {
+    dados_seg %>% 
+        select(starts_with(paste0("S1_", num, "_"))) %>% 
+      as.data.frame() %>%
+      .[,1] %>% 
+      attributes() %>% 
+      .$label
+  }
+)
+
+```
+
+
