@@ -1,0 +1,50 @@
+---
+title: "Clusterização hierárquica"
+output: html_document
+---
+
+> Método para construir clusters de forma hierárquica
+
+- Pode ser aglomerativa: todas as observações começam no seu próprio grupo e pares de clusters são unidos hierarquicamente até termos apenas um grupo.
+
+- Pode ser divisiva: todas as observações começam em um cluster e divisões são feitas até todas pertencerem ao seu próprio grupo.
+
+- A clusterização depende de uma métrica de distância e como calcular a distância entre clusters.
+
+```{r}
+library(tidyverse)
+
+dados_seg <- haven::read_spss(
+  "../dados/segmentacao/Strategy_FINAL_com peso_S1_v2.sav"
+)
+
+ajuste_h <- dados_seg %>%
+  select(starts_with("S1_")) %>%
+  dist() %>% 
+  hclust(method = "centroid")
+
+plot(ajuste_h)
+```
+
+```{r}
+dados_seg %>%
+  sample_n(100) %>% 
+  select(starts_with("S1_")) %>%
+  dist(method = "manhattan") %>% 
+  hclust() %>% 
+  plot()
+```
+
+
+```{r}
+ajuste_k <- dados_seg %>% 
+  select(starts_with("S1_")) %>%
+  kmeans(5)
+
+clusters_k <- ajuste_k$cluster
+clusters_h <- cutree(ajuste_h, k = 5)
+
+table(clusters_h, clusters_k)
+```
+
+
