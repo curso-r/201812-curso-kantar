@@ -1,0 +1,37 @@
+---
+title: "19-turf"
+author: "Curso-R"
+date: "12/18/2018"
+output: html_document
+---
+
+```{r, eval = FALSE}
+install.packages("turfR")
+```
+
+```{r}
+library(turfR)
+```
+
+```{r}
+data(turf_ex_data)
+ex1 <- turf(turf_ex_data, 10, k = 1.1:6)
+(ex1$turf)[[1]] %>% 
+  arrange(desc(rchX))
+```
+
+```{r}
+x <- data_frame(
+  id = 1:100,
+  master_card = as.numeric(rbernoulli(100, p = 0.5)),
+  visa = as.numeric(rbernoulli(100, p = ifelse(master_card == 1, 0.8, 0.3))),
+  amex = as.numeric(rbernoulli(100, p = ifelse(visa == 1, 0.3, 0.6)))
+)
+x$weigths <- x$master_card * 0.5 + x$visa * 0.2 + x$amex * 0.7
+x <- x %>% select(id, weigths, everything())
+
+tf <- turf(x, 3, c(1.01,2))
+tf$turf[[1]]
+tf$turf[[2]]
+```
+
