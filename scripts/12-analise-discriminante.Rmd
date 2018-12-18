@@ -1,0 +1,57 @@
+---
+title: "Análise discriminante"
+output: html_document
+---
+
+>  Modelo para encontrar classificadores
+
+- Considere o problema de classificar clientes em "bons" (Y = 1) e "ruins" (Y = 0).
+- Dado um conjunto de características dos clientes queremos encontrar um classificador que diga se eles são bons ou ruins.
+
+$$
+X_1, X_2, \dots, X_p
+$$
+
+Suposições da análise discriminante
+
+- Dado Y, as variáveis $X_i$ são normalmente distribuídas.
+
+$$
+P(X| Y = 0) \sim N_p(\mu_0, \Sigma_0) \\
+P(X| Y = 1) \sim N_p(\mu_1, \Sigma_1)
+$$
+
+- Se $\Sigma_0 = \Sigma_1$, o método é conhecido como análise discriminante linear.
+
+- Se $\Sigma_0 \neq \Sigma_1$, o método é conhecido como análise discriminante quadrática.
+
+$$
+\frac{L_1(\mu_1, \Sigma_1)}{L_0(\mu_0, \Sigma_0)} > c
+$$
+
+# Exemplo
+
+```{r}
+library(tidyverse)
+library(MASS)
+
+data("credit_data", package = "recipes")
+
+credit_data <- credit_data %>% 
+  mutate(Status = forcats::lvls_reorder(Status, c(2, 1))) %>% 
+  na.omit()
+```
+
+```{r}
+ajuste <- lda(Status ~ ., data = credit_data)
+ajuste
+```
+
+```{r}
+ajuste <- lda(Status ~ ., data = credit_data, CV = TRUE)
+table(credit_data$Status, ajuste$class)
+
+roc_obj <- pROC::roc(credit_data$Status, ajuste$posterior[,1])
+auc(roc_obj)
+```
+

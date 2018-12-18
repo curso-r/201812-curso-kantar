@@ -1,0 +1,23 @@
+---
+title: "K-means"
+output: html_document
+---
+
+- Atribuir os pontos ao cluster cujo centróide está mais próximo.
+- Calcular centróide de cada novo grupo.
+
+```{r}
+library(tidyverse)
+
+dados_seg <- haven::read_spss(
+  "../dados/segmentacao/Strategy_FINAL_com peso_S1_v2.sav"
+)
+
+ajuste <- dados_seg %>% 
+  select(starts_with("S1_")) %>%
+  kmeans(5)
+
+ajuste$cluster
+```
+
+https://www.curso-r.com/blog/2017-04-21-paleta-de-cores/
