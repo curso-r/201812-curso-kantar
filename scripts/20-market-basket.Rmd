@@ -1,0 +1,57 @@
+---
+title: "20-market-basket"
+author: "Curso-R"
+date: "12/18/2018"
+output: html_document
+---
+
+```{r, eval = FALSE}
+install.packages("arules")
+```
+
+
+```{r}
+library(tidyverse)
+library(arules)
+library(readxl)
+```
+
+```{r}
+bd <- read_excel("../dados/Online Retail.xlsx")
+glimpse(bd)
+```
+
+```{r}
+res <- bd %>% 
+  group_by(InvoiceNo) %>% 
+  summarise(produtos = list(Description))
+
+transacoes <- as(res$produtos, "transactions")
+
+summary(transacoes)
+```
+
+```{r}
+suporte <- 500/nrow(transacoes)
+confianca <- 0.1
+
+rules <- apriori(
+  transacoes, 
+  parameter = list(support = suporte, confidence = confianca, target = "rules")
+  )
+
+rules
+summary(rules)
+inspect(rules)
+```
+
+```{r}
+chocolate_rules <- apriori(
+  transacoes, 
+  parameter = list(support=0.001, confidence=0.5, maxlen = 3),
+  appearance = list(default="lhs",rhs="CHOCOLATE CALCULATOR")
+  )
+chocolate_rules
+inspect(rules)
+```
+
