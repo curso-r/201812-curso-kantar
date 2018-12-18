@@ -1,0 +1,101 @@
+---
+title: "15-analise-correspondencia"
+author: "Curso-R"
+date: "12/18/2018"
+output: html_document
+---
+
+```{r, eval = FALSE}
+install.packages(c("FactoMineR", "factoextra"))
+```
+
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(tidyverse)
+```
+
+```{r}
+data(housetasks)
+X <- as.table(as.matrix(housetasks))
+```
+
+# A matemática
+
+```{r}
+# calculamos a proporção em cada casela
+P <- X/sum(x)
+
+# calculando as `massas`
+col_mass <- colSums(P)
+row_mass <- rowSums(P)
+
+# calculando os valores esperados
+E <- row_mass %o% col_mass
+
+# calculando os resíduos
+R <- P - E
+
+# padronizando os resíduos
+I <- R/E
+Z <- I * sqrt(E)
+
+# fazendo a decomposição em valores singulares
+res <- svd(t(Z))
+rownames(res$u) <- colnames(X)
+rownames(res$v) <- rownames(X)
+
+# "des"-ponderando
+std_coord_col <- res$u/sqrt(col_mass)
+std_coord_row <- res$v/sqrt(row_mass)
+
+# calculando as coordenadas
+coord_col <- t(t(std_coord_col) * res$d)
+coord_row <- t(t(std_coord_row) * res$d)
+
+# gráfico
+bind_rows(
+  data.frame(coord_row) %>% 
+    rownames_to_column("label") %>% 
+    mutate(tipo = "linha"),
+  data.frame(coord_col) %>% 
+    rownames_to_column("label") %>% 
+    mutate(tipo = "coluna"),
+) %>% 
+  ggplot(aes(x = X1, y = X2, label = label, color = tipo)) +
+  geom_point() +
+  geom_text() +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  coord_cartesian(xlim = c(-1.5, 1.5), ylim = c(-1.5, 1.5))
+```
+
+```{r}
+res <- CA(X, ncp = 5, graph = FALSE)
+res
+summary(res)
+```
+
+```{r}
+fviz_screeplot(res)
+```
+
+
+```{r}
+fviz_ca_biplot(res, repel = TRUE)
+```
+
+```{r}
+fviz_ca_biplot(res, repel = TRUE, arrows = c(TRUE, TRUE))
+```
+
+```{r}
+fviz_ca_row(res, alpha.row = "cos2", repel = TRUE)
+res$row$cos2
+```
+
+```{r}
+fviz_ca_col(res, alpha.col = "cos2", repel = TRUE)
+res$col$cos2
+```
