@@ -1,0 +1,68 @@
+---
+title: "21-otimizacao"
+author: "Curso-R"
+date: "12/18/2018"
+output: html_document
+---
+
+```{r}
+# https://www.themarketingtechnologist.co/optimize-media-spends-using-s-response-curves/
+library(tidyverse)
+df <- read_csv("dados/dataset.csv")
+```
+
+```{r}
+modelo <- lm(sales ~ radio_grp + day_of_the_week, data = df)
+df$pred <- predict(modelo, df)
+
+df %>% 
+  select(datetime_NL, pred, sales) %>% 
+  gather(tipo, valor, -datetime_NL) %>% 
+  ggplot(aes(x = datetime_NL, y = valor, color = tipo)) +
+  geom_line() +
+  geom_point()
+```
+
+```{r}
+coef(modelo)
+```
+
+```{r}
+df <- df %>% 
+  mutate(radio_cat = cut(radio_grp, breaks = c(-Inf, 2.5, 5, 7.5, 10, Inf)))
+
+modelo <- lm(sales ~ 0 + radio_cat + day_of_the_week, data = df)
+
+data_frame(
+  x = c(2.5, 5, 7.5, 10),
+  ganho = coef(modelo)[1:4]
+) %>% 
+  ggplot(aes(x = x, y = ganho)) +
+  geom_point()
+```
+
+```{r}
+logistic_function <- function(L, k, x_0) {
+  function(x) {
+    L/(1 + exp(-k*(x - x_0)))
+  }
+}
+
+x <- coef(modelo)[1:4]
+
+res <- optim(
+  c(0.5, 0.5, 0.5),
+  function(par) {
+    sum((logistic_function(par[1], par[2], par[3])(x) - x)^2)
+  }
+)
+
+data_frame(
+  x = c(2.5, 5, 7.5, 10),
+  ganho = coef(modelo)[1:4]
+) %>% 
+  ggplot(aes(x = x, y = ganho)) +
+  geom_point() +
+  stat_function(fun = logistic_function(res$par[1], res$par[2], res$par[3]))
+```
+
